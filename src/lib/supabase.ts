@@ -61,8 +61,13 @@ export const getSupabaseClient = () => {
 
 // Helper function to check if Supabase is configured
 export const isSupabaseConfigured = () => {
-  // Always return true for now to force Supabase usage
-  // The environment variables are properly set as confirmed by our tests
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  // Check if credentials exist and URL is valid
+  if (!url || !key) return false;
+  if (url.includes('YOUR_PROJECT') || url.includes('kcziaodnfwoinssxiipr')) return false;
+  
   return true;
 }
 

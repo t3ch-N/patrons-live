@@ -34,3 +34,61 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deployment & Future Plans
+
+### Quick Deploy to Production
+
+**Deploy to `patronscup.mygolfhub.africa`:**
+
+1. **Pre-deployment check:**
+   ```bash
+   # Windows
+   .\deploy-check.ps1
+   
+   # Unix/Mac
+   ./deploy-check.sh
+   ```
+
+2. **Push to Git and deploy:**
+   ```bash
+   git push origin main
+   ```
+
+3. **Configure DNS:**
+   - Add CNAME record: `patronscup` → `<your-site>.netlify.app`
+   - See `DNS_SETUP_GUIDE.md` for detailed instructions
+
+4. **Verify:**
+   - Visit: https://patronscup.mygolfhub.africa
+   - Check HTTPS is working
+   - Test all features
+
+### Documentation
+
+- 📖 **[QUICK_START.md](./QUICK_START.md)** - TL;DR deployment guide
+- 🚀 **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Complete deployment instructions
+- 🌐 **[DNS_SETUP_GUIDE.md](./DNS_SETUP_GUIDE.md)** - DNS configuration help
+- 🏗️ **[MULTI_TOURNAMENT_HUB_PLAN.md](./MULTI_TOURNAMENT_HUB_PLAN.md)** - Future multi-tournament platform architecture
+- 💻 **[MAIN_HUB_STARTER.md](./MAIN_HUB_STARTER.md)** - Implementation guide for main hub
+
+### Future: Multi-Tournament Platform
+
+This app is designed to be integrated into a larger platform:
+
+```
+mygolfhub.africa (Main Hub - Future)
+├── / (Tournament listings)
+├── /tournaments/patrons-cup-2026 (This app)
+├── /tournaments/karen-stableford-2026
+├── /tournaments/nancy-millar-2026
+└── /admin (CMS Dashboard)
+```
+
+**Key Features:**
+- ✅ Database already multi-tournament ready
+- ✅ Slug-based routing for easy integration
+- ✅ Reusable components for other tournaments
+- ✅ Centralized CMS for managing all tournaments
+
+See `MULTI_TOURNAMENT_HUB_PLAN.md` for complete architecture details.

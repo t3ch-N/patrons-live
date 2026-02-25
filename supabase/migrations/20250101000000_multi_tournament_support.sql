@@ -29,14 +29,14 @@ CREATE TABLE IF NOT EXISTS tournaments (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Insert current tournament (Patrons Cup 2025)
+-- 2. Insert current tournament (Patrons Cup 2026)
 INSERT INTO tournaments (name, slug, description, start_date, end_date, status, format) 
 VALUES (
-  'Patrons Cup 2025', 
-  'patrons-cup-2025', 
+  'Patrons Cup 2026', 
+  'patrons-cup-2026', 
   'Annual Patrons Cup Tournament at Muthaiga Golf Club', 
-  '2025-08-22', 
-  '2025-08-24', 
+  '2026-08-21', 
+  '2026-08-23', 
   'active',
   'patrons_cup'
 ) ON CONFLICT (slug) DO NOTHING;

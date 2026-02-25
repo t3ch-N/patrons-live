@@ -24,36 +24,18 @@ interface TournamentProviderProps {
 }
 
 export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children }) => {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [scores, setScores] = useState<Score[]>([]);
-  const [useSupabase, setUseSupabase] = useState(true); // Force Supabase usage
-  const [isLoading, setIsLoading] = useState(true);
+  const [teams, setTeams] = useState<Team[]>(teamsData as Team[]);
+  const [players, setPlayers] = useState<Player[]>(playersData as Player[]);
+  const [matches, setMatches] = useState<Match[]>(matchesData as Match[]);
+  const [scores, setScores] = useState<Score[]>(scoresData as Score[]);
+  const [useSupabase, setUseSupabase] = useState(false); // Use local data
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Force Supabase usage
+  // Use local JSON data - skip Supabase
   useEffect(() => {
-    console.log('🔧 FORCING SUPABASE USAGE...');
-    console.log('isSupabaseConfigured():', isSupabaseConfigured());
-    console.log('supabase client:', supabase ? 'Available' : 'Not available');
-    
-    if (isSupabaseConfigured() && supabase) {
-      console.log('✅ Supabase configured, loading data...');
-      loadFromSupabase().then(() => {
-        setIsLoading(false);
-      });
-      setupRealtimeSubscriptions();
-      
-      // Start automatic match status monitoring
-      matchStatusManager.startMonitoring();
-      
-      // Cleanup function to stop monitoring when component unmounts
-      return () => {
-        matchStatusManager.stopMonitoring();
-      };
-    } else {
-      console.error('❌ Supabase not configured properly!');
-    }
+    console.log('✅ Using local JSON data');
+    console.log(`Teams: ${teams.length}, Players: ${players.length}, Matches: ${matches.length}, Scores: ${scores.length}`);
+    setIsLoading(false);
   }, []);
 
   // Disable localStorage fallback completely

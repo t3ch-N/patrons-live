@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "ts-node --project tsconfig.json scripts/migrate-to-supabase.ts"
+    "migrate": "ts-node --project tsconfig.json scripts/migrate-to-supabase.ts",
+    "db:migrate": "node migrate-data.js",
+    "db:test": "node test-connection.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.56.0",

@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
-          <TournamentContextSwitcher useSupabase={true}>
+          <TournamentContextSwitcher useSupabase={false}>
             <div className="min-h-screen bg-gray-50">
               <Navbar />
               <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
