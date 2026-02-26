@@ -244,23 +244,59 @@ function MatchManager() {
 
 function TeamManager() {
   const [teams, setTeams] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [teamPlayers, setTeamPlayers] = useState({});
   const [showForm, setShowForm] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState('');
   const [formData, setFormData] = useState({ tournament_id: 1, name: '', division: 'A', color: '#000000' });
   const supabase = createClient();
 
   useEffect(() => {
     loadTeams();
+    loadPlayers();
   }, []);
 
   const loadTeams = async () => {
     const { data } = await supabase.from('teams').select('*');
     setTeams(data || []);
+    
+    // Load players for each team
+    if (data) {
+      for (const team of data) {
+        const { data: tpData } = await supabase
+          .from('tournament_players')
+          .select('*, player_database(*)')
+          .eq('team_id', team.id);
+        setTeamPlayers(prev => ({ ...prev, [team.id]: tpData || [] }));
+      }
+    }
+  };
+
+  const loadPlayers = async () => {
+    const { data } = await supabase.from('player_database').select('*').order('full_name');
+    setPlayers(data || []);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await supabase.from('teams').insert([formData]);
     setShowForm(false);
+    loadTeams();
+  };
+
+  const addPlayerToTeam = async () => {
+    if (!selectedPlayer || !selectedTeam) return;
+    
+    await supabase.from('tournament_players').insert([{
+      tournament_id: formData.tournament_id,
+      player_id: parseInt(selectedPlayer),
+      team_id: selectedTeam,
+      status: 'confirmed'
+    }]);
+    
+    setSelectedPlayer('');
+    setSelectedTeam(null);
     loadTeams();
   };
 
@@ -288,11 +324,41 @@ function TeamManager() {
       <div className="grid grid-cols-2 gap-4">
         {teams.map((t) => (
           <div key={t.id} className="bg-white p-4 rounded shadow" style={{ borderLeft: `4px solid ${t.color}` }}>
-            <h3 className="font-bold">{t.name}</h3>
-            <p className="text-sm text-gray-600">Division {t.division}</p>
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <h3 className="font-bold">{t.name}</h3>
+                <p className="text-sm text-gray-600">Division {t.division}</p>
+              </div>
+              <button onClick={() => setSelectedTeam(t.id)} className="text-sm px-2 py-1 bg-blue-600 text-white rounded">Add Player</button>
+            </div>
+            
+            <div className="mt-2 space-y-1">
+              <p className="text-xs font-semibold text-gray-500">Players ({teamPlayers[t.id]?.length || 0}):</p>
+              {teamPlayers[t.id]?.map(tp => (
+                <p key={tp.id} className="text-xs text-gray-700">• {tp.player_database?.full_name}</p>
+              ))}
+            </div>
           </div>
         ))}
       </div>
+
+      {selectedTeam && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Add Player to Team</h3>
+            <select value={selectedPlayer} onChange={(e) => setSelectedPlayer(e.target.value)} className="w-full px-3 py-2 border rounded-md mb-4">
+              <option value="">Select player...</option>
+              {players.map(p => (
+                <option key={p.id} value={p.id}>{p.full_name} {p.handicap ? `(${p.handicap})` : ''}</option>
+              ))}
+            </select>
+            <div className="flex gap-2">
+              <button onClick={addPlayerToTeam} disabled={!selectedPlayer} className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">Add</button>
+              <button onClick={() => setSelectedTeam(null)} className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

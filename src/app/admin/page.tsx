@@ -9,9 +9,12 @@ export const dynamic = 'force-dynamic';
 export default function AdminPage() {
   const [players, setPlayers] = useState<any[]>([]);
   const [tournaments, setTournaments] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const [newRole, setNewRole] = useState('player');
+  const [showAssignRole, setShowAssignRole] = useState(false);
+  const [roleAssignment, setRoleAssignment] = useState({ userId: '', tournamentId: '', teamId: '', role: 'team_captain' });
   const router = useRouter();
 
   useEffect(() => {
@@ -68,6 +71,14 @@ export default function AdminPage() {
         .order('start_date', { ascending: false });
 
       setTournaments(tournamentsData || []);
+
+      // Load teams
+      const { data: teamsData } = await supabase
+        .from('teams')
+        .select('*, tournaments(name)')
+        .order('name');
+
+      setTeams(teamsData || []);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -88,6 +99,23 @@ export default function AdminPage() {
       alert('Role updated successfully!');
       loadData();
       setSelectedPlayer(null);
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+    }
+  };
+
+  const assignTournamentRole = async () => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('tournament_roles')
+        .insert([roleAssignment]);
+
+      if (error) throw error;
+
+      alert('Tournament role assigned!');
+      setShowAssignRole(false);
+      setRoleAssignment({ userId: '', tournamentId: '', teamId: '', role: 'team_captain' });
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     }
@@ -135,7 +163,15 @@ export default function AdminPage() {
 
           {/* Tournaments Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">Tournaments ({tournaments.length})</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Tournaments ({tournaments.length})</h2>
+              <button
+                onClick={() => setShowAssignRole(true)}
+                className="text-sm px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+              >
+                Assign Role
+              </button>
+            </div>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {tournaments.map((tournament) => (
                 <div key={tournament.id} className="border rounded p-3">
@@ -149,6 +185,89 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+
+        {/* Assign Tournament Role Modal */}
+        {showAssignRole && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Assign Tournament Role</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">User</label>
+                  <select
+                    value={roleAssignment.userId}
+                    onChange={(e) => setRoleAssignment({...roleAssignment, userId: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md"
+                  >
+                    <option value="">Select user...</option>
+                    {players.map((p) => (
+                      <option key={p.user_id} value={p.user_id}>{p.full_name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tournament</label>
+                  <select
+                    value={roleAssignment.tournamentId}
+                    onChange={(e) => setRoleAssignment({...roleAssignment, tournamentId: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md"
+                  >
+                    <option value="">Select tournament...</option>
+                    {tournaments.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Role</label>
+                  <select
+                    value={roleAssignment.role}
+                    onChange={(e) => setRoleAssignment({...roleAssignment, role: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-md"
+                  >
+                    <option value="tournament_manager">Tournament Manager</option>
+                    <option value="team_captain">Team Captain</option>
+                    <option value="scorer">Scorer</option>
+                  </select>
+                </div>
+
+                {roleAssignment.role === 'team_captain' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Team</label>
+                    <select
+                      value={roleAssignment.teamId}
+                      onChange={(e) => setRoleAssignment({...roleAssignment, teamId: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-md"
+                    >
+                      <option value="">Select team...</option>
+                      {teams.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name} ({t.tournaments?.name})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={assignTournamentRole}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                >
+                  Assign Role
+                </button>
+                <button
+                  onClick={() => setShowAssignRole(false)}
+                  className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Edit Role Modal */}
         {selectedPlayer && (
