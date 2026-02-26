@@ -283,6 +283,7 @@ export default function AdminPage() {
                   className="w-full px-3 py-2 border rounded-md"
                 >
                   <option value="player">Player</option>
+                  <option value="club_manager">Club Manager</option>
                   <option value="team_captain">Team Captain</option>
                   <option value="tournament_manager">Tournament Manager</option>
                   <option value="admin">Admin</option>

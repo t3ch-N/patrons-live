@@ -221,6 +221,20 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Club Manager View */}
+        {role === 'club_manager' && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold mb-4">Club Management</h2>
+            <p className="text-gray-600 mb-4">Manage your club and register players</p>
+            <a
+              href="/club-manager"
+              className="inline-block px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Go to Club Manager Dashboard
+            </a>
+          </div>
+        )}
+
         {/* Tournament Manager View */}
         {role === 'tournament_manager' && (
           <div className="bg-white rounded-lg shadow-md p-6">
