@@ -1,26 +1,119 @@
 # Fix Netlify Deployment Errors
 
-## Issues Fixed
+## ✅ Issues Fixed
 
-### 1. ✅ Missing `createClient` Export
-**Problem:** CMS pages import `createClient` but it wasn't exported from `@/lib/supabase`
+### 1. Missing `createClient` Export ✅
+**Fixed in:** `src/lib/supabase.ts`
 
-**Solution:** Added proper export in `src/lib/supabase.ts`:
-```typescript
-export const createClient = () => {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
-    realtime: { params: { eventsPerSecond: 10 } }
-  });
-};
+### 2. Build-Time Environment Variable Error ✅
+**Fixed in:** `src/app/api/scoring/update-hole/route.ts`
+- Moved Supabase initialization from module scope to request handler
+- Prevents build-time requirement of `SUPABASE_SERVICE_ROLE_KEY`
+
+---
+
+## 🚀 Deploy to Netlify
+
+### Step 1: Push Code
+```bash
+git add -A
+git commit -m "Fix Netlify build - move Supabase init to runtime"
+git push origin main
 ```
 
-### 2. ⚠️ Missing Environment Variable
-**Problem:** Build fails because `SUPABASE_SERVICE_ROLE_KEY` is not set in Netlify
+### Step 2: Add Environment Variables
 
-**Solution:** Add environment variable in Netlify Dashboard
+**Go to:** Netlify Dashboard → Site settings → Environment variables
+
+**Add these 3 variables:**
+
+```
+NEXT_PUBLIC_SUPABASE_URL
+https://kcziaodnfwoinssxiipr.supabase.co
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtjemlhb2RuZndvaW5zc3hpaXByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU3MTY0MTQsImV4cCI6MjA3MTI5MjQxNH0.bLBx1XS4qiBFl4tWq-lFHIeQiC9TrHCdNDxWOaydHd8
+
+SUPABASE_SERVICE_ROLE_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtjemlhb2RuZndvaW5zc3hpaXByIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTcxNjQxNCwiZXhwIjoyMDcxMjkyNDE0fQ.1P1M-mzn01eAUfDtUF3tShkZMv0h0xiQtvJBw8O6THQ
+```
+
+### Step 3: Deploy
+- Netlify will auto-deploy when you push
+- Or manually: Deploys → Trigger deploy
+
+### Step 4: Verify
+- Build should succeed ✅
+- No environment variable errors ✅
+- Site loads correctly ✅
+
+---
+
+## What Was Changed
+
+### Before (Caused Build Error):
+```typescript
+// Module scope - runs at build time
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+if (!supabaseServiceKey) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required');
+}
+const supabase = createClient(url, supabaseServiceKey);
+```
+
+### After (Fixed):
+```typescript
+export async function POST(request: NextRequest) {
+  // Runtime - only runs when API is called
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseServiceKey) {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+  }
+  const supabase = createClient(url, supabaseServiceKey);
+  // ...
+}
+```
+
+---
+
+## Why This Fixes The Build
+
+**Problem:** Next.js runs API routes during build to collect page data. If environment variables are required at module scope, the build fails when they're missing.
+
+**Solution:** Initialize Supabase client inside the request handler (runtime) instead of at module scope (build time). This way:
+- Build succeeds even without the secret
+- Secret is only required when API is actually called
+- More secure (secret not in build artifacts)
+
+---
+
+## Troubleshooting
+
+### Build Still Fails
+1. Clear build cache: Site settings → Build & deploy → Clear cache
+2. Verify all 3 env vars are set
+3. Check env var names match exactly (case-sensitive)
+
+### Runtime Errors
+If you see "Server misconfigured" at runtime:
+- Verify `SUPABASE_SERVICE_ROLE_KEY` is set in Netlify
+- Check the value is correct (no extra spaces)
+- Redeploy after adding the variable
+
+---
+
+## Quick Checklist
+
+- [ ] Code changes committed and pushed
+- [ ] All 3 environment variables added in Netlify
+- [ ] New deploy triggered
+- [ ] Build succeeded
+- [ ] Site loads without errors
+- [ ] API routes work correctly
+
+---
+
+**Your deployment should now succeed!** 🚀
 
 ---
 
