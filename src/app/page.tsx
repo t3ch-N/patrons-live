@@ -88,6 +88,26 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Player Portal Banner */}
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Player Portal</h2>
+              <p className="text-blue-100">Register, login, and manage your tournament participation</p>
+            </div>
+            <div className="flex gap-3">
+              <a href="/register" className="px-6 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
+                Register
+              </a>
+              <a href="/login" className="px-6 py-2 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 transition">
+                Login
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Tournament Countdown */}
       <div className="max-w-6xl mx-auto px-4">
         <TournamentCountdown />
