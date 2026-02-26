@@ -40,14 +40,36 @@ export default function TournamentCMS() {
 
 function TournamentManager({ tournaments, onUpdate }) {
   const [showForm, setShowForm] = useState(false);
+  const [showSettings, setShowSettings] = useState(null);
   const [formData, setFormData] = useState({ name: '', slug: '', description: '', start_date: '', end_date: '', format: 'patrons_cup', status: 'upcoming' });
+  const [settings, setSettings] = useState({
+    has_divisions: true,
+    divisions: ['A', 'B'],
+    num_teams: 12,
+    points_for_win: 2,
+    points_for_draw: 1,
+    points_for_loss: 0,
+    total_rounds: 3,
+    sessions_per_round: 2,
+    show_divisions_separately: true,
+    show_holes_won: true,
+    show_strokes_differential: true
+  });
   const supabase = createClient();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await supabase.from('tournaments').insert([formData]);
+    const { data: tournament } = await supabase.from('tournaments').insert([formData]).select().single();
+    if (tournament) {
+      await supabase.from('tournament_settings').insert([{ tournament_id: tournament.id, ...settings }]);
+    }
     setShowForm(false);
     onUpdate();
+  };
+
+  const saveSettings = async (tournamentId) => {
+    await supabase.from('tournament_settings').upsert([{ tournament_id: tournamentId, ...settings }]);
+    setShowSettings(null);
   };
 
   const updateStatus = async (id, status) => {
@@ -64,6 +86,7 @@ function TournamentManager({ tournaments, onUpdate }) {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow mb-6">
+          <h3 className="font-bold mb-4">Basic Info</h3>
           <div className="grid grid-cols-2 gap-4">
             <input type="text" placeholder="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="border p-2 rounded" required />
             <input type="text" placeholder="Slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="border p-2 rounded" required />
@@ -76,7 +99,39 @@ function TournamentManager({ tournaments, onUpdate }) {
             </select>
           </div>
           <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="border p-2 rounded w-full mt-4" rows="3" />
-          <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded mt-4">Create</button>
+          
+          <h3 className="font-bold mt-6 mb-4">Tournament Settings</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={settings.has_divisions} onChange={(e) => setSettings({ ...settings, has_divisions: e.target.checked })} />
+                <span>Has Divisions</span>
+              </label>
+            </div>
+            <input type="number" placeholder="Number of Teams" value={settings.num_teams} onChange={(e) => setSettings({ ...settings, num_teams: parseInt(e.target.value) })} className="border p-2 rounded" />
+            <input type="number" step="0.5" placeholder="Points for Win" value={settings.points_for_win} onChange={(e) => setSettings({ ...settings, points_for_win: parseFloat(e.target.value) })} className="border p-2 rounded" />
+            <input type="number" step="0.5" placeholder="Points for Draw" value={settings.points_for_draw} onChange={(e) => setSettings({ ...settings, points_for_draw: parseFloat(e.target.value) })} className="border p-2 rounded" />
+            <input type="number" placeholder="Total Rounds" value={settings.total_rounds} onChange={(e) => setSettings({ ...settings, total_rounds: parseInt(e.target.value) })} className="border p-2 rounded" />
+            <input type="number" placeholder="Sessions per Round" value={settings.sessions_per_round} onChange={(e) => setSettings({ ...settings, sessions_per_round: parseInt(e.target.value) })} className="border p-2 rounded" />
+          </div>
+          
+          <h3 className="font-bold mt-6 mb-4">Standings Display</h3>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={settings.show_divisions_separately} onChange={(e) => setSettings({ ...settings, show_divisions_separately: e.target.checked })} />
+              <span>Show Divisions Separately</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={settings.show_holes_won} onChange={(e) => setSettings({ ...settings, show_holes_won: e.target.checked })} />
+              <span>Show Holes Won</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={settings.show_strokes_differential} onChange={(e) => setSettings({ ...settings, show_strokes_differential: e.target.checked })} />
+              <span>Show Strokes Differential</span>
+            </label>
+          </div>
+          
+          <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded mt-6">Create Tournament</button>
         </form>
       )}
 
@@ -89,7 +144,8 @@ function TournamentManager({ tournaments, onUpdate }) {
                 <p className="text-gray-600">{t.slug}</p>
                 <p className="text-sm text-gray-500">{t.start_date} to {t.end_date}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                <button onClick={() => setShowSettings(t.id)} className="text-blue-600 hover:underline text-sm">Settings</button>
                 <button onClick={() => updateStatus(t.id, 'upcoming')} className={`px-3 py-1 rounded text-sm ${t.status === 'upcoming' ? 'bg-yellow-600 text-white' : 'bg-gray-200'}`}>Upcoming</button>
                 <button onClick={() => updateStatus(t.id, 'active')} className={`px-3 py-1 rounded text-sm ${t.status === 'active' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}>Active</button>
                 <button onClick={() => updateStatus(t.id, 'completed')} className={`px-3 py-1 rounded text-sm ${t.status === 'completed' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>Completed</button>
