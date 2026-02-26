@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 export default function TournamentCMS() {
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState(null);

@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
 import Link from 'next/link';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 export default function MainHubCMS() {
   const [content, setContent] = useState({
     hero_title: 'MyGolfHub Africa',

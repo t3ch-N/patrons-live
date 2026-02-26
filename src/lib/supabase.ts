@@ -7,6 +7,11 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 // Export createClient function for CMS and other components
 export const createClient = () => {
   if (!supabaseUrl || !supabaseAnonKey) {
+    // Return null instead of throwing during build
+    if (typeof window === 'undefined') {
+      console.warn('Supabase credentials not available at build time');
+      return null as any;
+    }
     throw new Error('Missing Supabase environment variables');
   }
   return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
@@ -27,7 +32,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
         },
       },
     })
-  : null
+  : (typeof window === 'undefined' ? null : null)
 
 // Create a browser-specific Supabase client
 export const getBrowserSupabaseClient = () => {
