@@ -1,12 +1,26 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 // Get environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+// Export createClient function for CMS and other components
+export const createClient = () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
+  });
+};
+
 // Create Supabase client only if environment variables are available
 export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey, {
+  ? createSupabaseClient(supabaseUrl, supabaseAnonKey, {
       realtime: {
         params: {
           eventsPerSecond: 10,
@@ -23,7 +37,7 @@ export const getBrowserSupabaseClient = () => {
   const browserKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
   if (browserUrl && browserKey) {
-    return createClient(browserUrl, browserKey, {
+    return createSupabaseClient(browserUrl, browserKey, {
       realtime: {
         params: {
           eventsPerSecond: 10,
@@ -43,7 +57,7 @@ export const getSupabaseClient = () => {
     const browserKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
     if (browserUrl && browserKey) {
-      return createClient(browserUrl, browserKey, {
+      return createSupabaseClient(browserUrl, browserKey, {
         realtime: {
           params: {
             eventsPerSecond: 10,
