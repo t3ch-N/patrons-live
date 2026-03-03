@@ -53,31 +53,36 @@ export default function KepsaRegistrationPage() {
 
       if (regError) throw regError;
 
-      // Initiate STK Push
-      const stkResponse = await fetch('/api/mpesa/stk-push', {
+      // Trigger M-Pesa STK Push
+      const mpesaResponse = await fetch('/api/mpesa/stk-push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phoneNumber: formData.phone,
           amount: amount,
           registrationId: registration.id,
-          accountReference: `KEPSA-${registration.id}`
+          accountReference: `REG-${registration.id}`
         })
       });
 
-      const stkData = await stkResponse.json();
+      const mpesaData = await mpesaResponse.json();
 
-      if (stkData.success) {
+      if (mpesaData.success) {
         // Update registration with checkout request ID
         await supabase
           .from('tournament_registrations')
-          .update({ checkout_request_id: stkData.checkoutRequestId })
+          .update({
+            checkout_request_id: mpesaData.checkoutRequestId,
+            merchant_request_id: mpesaData.merchantRequestId
+          })
           .eq('id', registration.id);
 
-        setMessage('Payment request sent to your phone. Please enter your M-Pesa PIN to complete payment.');
+        setMessage(`STK Push sent! Check your phone to complete payment. Registration ID: ${registration.id}`);
       } else {
-        throw new Error(stkData.message);
+        throw new Error(mpesaData.message || 'M-Pesa payment failed');
       }
+
+      setFormData({ fullName: '', email: '', phone: '', additionalPlayers: ['', '', ''] });
     } catch (error: any) {
       setMessage(`Error: ${error.message}`);
     } finally {
@@ -124,7 +129,7 @@ export default function KepsaRegistrationPage() {
                 required
                 value={formData.fullName}
                 onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none text-gray-900 bg-white text-base"
               />
             </div>
 
@@ -135,7 +140,7 @@ export default function KepsaRegistrationPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none text-gray-900 bg-white text-base"
               />
             </div>
 
@@ -147,7 +152,7 @@ export default function KepsaRegistrationPage() {
                 placeholder="254712345678"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none text-gray-900 bg-white text-base placeholder-gray-400"
               />
               <p className="text-xs text-gray-500 mt-1">Format: 254XXXXXXXXX</p>
             </div>
@@ -166,7 +171,7 @@ export default function KepsaRegistrationPage() {
                       newPlayers[i] = e.target.value;
                       setFormData({...formData, additionalPlayers: newPlayers});
                     }}
-                    className="w-full px-3 py-2 border rounded-md mb-2"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none text-gray-900 bg-white text-base placeholder-gray-400 mb-2"
                   />
                 ))}
               </div>

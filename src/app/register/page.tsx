@@ -61,7 +61,7 @@ export default function RegisterPage() {
               required
               value={formData.fullName}
               onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 bg-white text-base"
             />
           </div>
 
@@ -72,7 +72,7 @@ export default function RegisterPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 bg-white text-base"
             />
           </div>
 
@@ -84,7 +84,7 @@ export default function RegisterPage() {
               minLength={6}
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 bg-white text-base"
             />
           </div>
 
@@ -94,7 +94,7 @@ export default function RegisterPage() {
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 bg-white text-base"
             />
           </div>
 
@@ -105,7 +105,7 @@ export default function RegisterPage() {
               step="0.1"
               value={formData.handicap}
               onChange={(e) => setFormData({...formData, handicap: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 bg-white text-base"
             />
           </div>
 
